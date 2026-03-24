@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🛡️ NEUROGUARD AI</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #fff;
+            text-align: center;
+        }
+
+        h1 {
+            color: #22c55e;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            margin: 20px auto;
+            width: 60%;
+            border-radius: 10px;
+        }
+
+        input {
+            padding: 10px;
+            width: 70%;
+            margin: 10px;
+            background: #0b1220;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #22c55e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        .output-box {
+            background: #0b1220;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: left;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        /* Collapsible */
+        .collapsible {
+            margin-top: 10px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            background: #1e293b;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        .collapsible-header:hover {
+            background: #334155;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 10px;
+            background: #0b1220;
+            max-height: 200px;
+            overflow-y: auto;
+
+        }
+
+        /* Progress Bar Wrapper */
+        .progress-container {
+            width: 100%;
+            background: #0b1220;
+            border-radius: 8px;
+            overflow: hidden;
+            /* IMPORTANT: keeps bar inside */
+            margin-top: 15px;
+        }
+
+        /* Actual Green Bar */
+        .progress-bar {
+            height: 12px;
+            width: 65%;
+            /* dynamically change this with JS */
+            background: #22c55e;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🛡️ NEUROGUARD AI</h1>
+
+    <!-- PASSWORD -->
+    <div class="card">
+        <h2>Password Analyzer</h2>
+        <input type="text" id="password" placeholder="Enter password">
+        <button onclick="checkPassword()">Analyze</button>
+
+        <div id="passwordScore"></div>
+        
+
+        <div class="progress-container">
+            <div class="progress-bar" id="passwordBar"></div>
+        </div>
+
+
+        <div id="passwordResult" class="output-box">Enter a password</div>
+    </div>
+
+
+    <!-- URL -->
+    <div class="card">
+        <h2>URL Safety Checker</h2>
+        <input type="text" id="url" placeholder="Enter URL">
+        <button onclick="checkURL()">Analyze</button>
+
+        <div id="urlScore"></div>
+        <div id="urlResult" class="output-box">Enter a URL</div>
+    </div>
+
+    <script>
+
+        // 🔥 Collapsible
+        function createSection(title, content) {
+            const id = Math.random().toString(36).substr(2, 9);
+
+            return `
+        <div class="collapsible">
+            <div class="collapsible-header" onclick="toggleSection('${id}')">
+                ${title} ⬇️
+            </div>
+            <div id="${id}" class="collapsible-content">
+                ${content}
+            </div>
+        </div>
+    `;
+        }
+
+        function toggleSection(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === "block" ? "none" : "block";
+        }
+
+        // 🔥 Display AI Response
+        function displayAIResponse(data, containerId) {
+            const strength = getStrength(data.score || 5);
+
+let html = `
+    <div>
+        <b>Strength:</b> <span style="color:${strength.color};">${strength.label}</span><br>
+        <b>Score:</b> ${data.score || 5}/10 ⭐
+    </div>
+`;
+
+            if (data.weaknesses) {
+                html += createSection("⚠️ Weaknesses",
+                    `<ul>${data.weaknesses.map(w => `<li>${w}</li>`).join("")}</ul>`
+                );
+            }
+
+            if (data.risk) {
+                html += createSection("🧠 Risk Explanation", `<p>${data.risk}</p>`);
+            }
+
+            if (data.improved) {
+                html += createSection("🔐 Improved Password",
+                    `<div style="color:#22c55e; font-weight:bold;">${data.improved}</div>`
+                );
+            }
+
+            if (data.reason) {
+                html += createSection("📌 Why It’s Better", `<p>${data.reason}</p>`);
+            }
+
+            if (data.recommendations) {
+                html += createSection("✅ Recommendations",
+                    `<ul>${data.recommendations.map(r => `<li>${r}</li>`).join("")}</ul>`
+                );
+            }
+
+            document.getElementById(containerId).innerHTML = html;
+        }
+        function getStrength(score) {
+            if (score <= 4) return { label: "weak" , color: "#ef4444"};
+            if (score <= 7) return { label: "medium" , color: "#f59e0b"};
+            return{label:"strong",color:"#22c55e"};
+        }
+
+        // Score bar
+        function showScore(score) {
+            const { label, color } = getStrength(score);
+
+    // Update bar correctly
+    const bar = document.getElementById("passwordBar");
+    bar.style.width = (score * 10) + "%";   // 5 → 50%
+    bar.style.background = color;
+
+    // Update score text
+    document.getElementById("passwordScore").innerHTML =
+        `<b>Score:</b> ${score}/10 ⭐`;
+
+    return label;
+}
+    
+
+        //  PASSWORD
+       async function checkPassword() {
+    console.log("BUTTON CLICKED ✅");
+
+    const password = document.getElementById("password").value;
+    document.getElementById("passwordResult").innerHTML = "Analyzing...";
+
+    try {
+        const res = await fetch("/analyze-password/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ password: password })
+        });
+
+        console.log("STATUS:", res.status);
+
+        const data = await res.json();
+
+        let parsedData = data;
+
+        if (data.response) {
+            try {
+                let cleaned = data.response
+                    .replace(/```json/g, "")
+                    .replace(/```/g, "")
+                    .trim();
+
+                parsedData = JSON.parse(cleaned);
+            } catch {
+                document.getElementById("passwordResult").innerHTML = data.response;
+                return;
+            }
+        }
+
+        displayAIResponse(parsedData, "passwordResult");
+        showScore(parsedData.score || 5);
+
+    } catch (err) {
+        console.error("ERROR:", err);
+        document.getElementById("passwordResult").innerHTML = "Error: " + err;
+    }
+} 
+ 
+
+            
+        
+
+        // URL
+        async function checkURL() {
+            const url = document.getElementById("url").value;
+            document.getElementById("urlResult").innerHTML = "Analyzing...";
+
+            const formData = new FormData();
+            formData.append("url", url);
+
+            try {
+                const res = await fetch("/analyze-url/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                let parsedData = data;
+
+                if (data.response) {
+                    try {
+                        let cleaned = data.response
+                            .replace(/```json/g, "")
+                            .replace(/```/g, "")
+                            .trim();
+
+                        parsedData = JSON.parse(cleaned);
+                    } catch {
+                        document.getElementById("urlResult").innerHTML = data.response;
+                        return;
+                    }
+                }
+
+                displayAIResponse(parsedData, "urlResult");
+
+            } catch {
+                document.getElementById("urlResult").innerHTML = "Network error";
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
