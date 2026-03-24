@@ -7,13 +7,15 @@ import re
 import os
 from decouple import config
 from django.http import HttpResponse
+from django.core.management.utils import get_random_secret_key
+print(get_random_secret_key())
 
 def my_view(request):
     secret_value = config('MY_SECRET_KEY')
-    return HttpResponse(f"My secret is safely loaded: {sk_5f8a8ce2e14a402aab1bc872954b4ef09e2329ff50d741b39bfb369c2b5efbd4}")
+    return HttpResponse(f"My secret is safely loaded: {'sk_d6a01095ad704a49b5956c604697d5174221a4a3193d47ac9e41ab9dcf80c224'}")
 
 # ✅ Use environment variable for API key (more secure)
-ASI_API_KEY = os.getenv("ASI_API_KEY", "sk_5f8a8ce2e14a402aab1bc872954b4ef09e2329ff50d741b39bfb369c2b5efbd4")
+ASI_API_KEY = os.getenv("ASI_API_KEY", "sk_d6a01095ad704a49b5956c604697d5174221a4a3193d47ac9e41ab9dcf80c224")
 ASI_URL = "https://api.asi1.ai/v1/chat/completions"
 
 
